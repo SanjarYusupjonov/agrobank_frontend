@@ -1,0 +1,308 @@
+/* ── Filter bar extended ── */
+.att-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.att-name-filter { flex: 1; min-width: 220px; }
+
+.att-name-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.att-name-input {
+  width: 180px;
+  padding: 7px 28px 7px 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.att-name-input::placeholder { color: rgba(255,255,255,0.25); }
+.att-name-input:focus { border-color: rgba(30,184,100,0.4); }
+
+.att-name-clear {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.35);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 0.15s;
+}
+.att-name-clear:hover { color: rgba(255,255,255,0.7); }
+
+.att-search-btn {
+  padding: 7px 14px;
+  background: rgba(30,184,100,0.1);
+  border: 1px solid rgba(30,184,100,0.2);
+  border-radius: 8px;
+  color: #1eb864;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.att-search-btn:hover {
+  background: rgba(30,184,100,0.18);
+  border-color: rgba(30,184,100,0.35);
+}
+
+.att-date-input {
+  padding: 7px 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  color-scheme: dark;
+}
+.att-date-input:focus { border-color: rgba(30,184,100,0.4); }
+
+/* ── Timeline container ── */
+.timeline-container {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* ── Header row (hour labels) ── */
+.tl-header-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(30,184,100,0.04);
+}
+
+.tl-name-col {
+  width: 220px;
+  min-width: 220px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tl-bar-col {
+  flex: 1;
+  position: relative;
+  padding-right: 16px;
+}
+
+.tl-hour-labels {
+  position: relative;
+  height: 20px;
+}
+
+.tl-hour-label {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: rgba(255,255,255,0.28);
+  font-family: 'DM Mono', monospace;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* ── Employee row ── */
+.tl-employee-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.15s;
+}
+.tl-employee-row:last-child { border-bottom: none; }
+.tl-employee-row:hover { background: rgba(255,255,255,0.025); }
+
+/* ── Avatar & name ── */
+.tl-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(30,184,100,0.25), rgba(10,122,62,0.15));
+  border: 1px solid rgba(30,184,100,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #4ade80;
+  flex-shrink: 0;
+  font-family: 'Syne', sans-serif;
+}
+
+.tl-name-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.tl-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tl-summary {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  font-family: 'DM Mono', monospace;
+}
+
+.tl-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tl-dot--work { background: #34d399; }
+.tl-dot--break { background: #f59e0b; }
+
+/* ── Track & segments ── */
+.tl-track {
+  position: relative;
+  height: 24px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 6px;
+  overflow: visible;
+}
+
+.tl-gridline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255,255,255,0.05);
+  pointer-events: none;
+}
+
+.tl-segment {
+  position: absolute;
+  top: 2px;
+  height: 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.1s;
+}
+
+.tl-segment:hover {
+  filter: brightness(1.25);
+  transform: scaleY(1.15);
+  z-index: 10;
+}
+
+/* Work = teal-green gradient */
+.tl-segment--work {
+  background: linear-gradient(90deg, #059669 0%, #34d399 100%);
+  box-shadow: 0 0 8px rgba(52,211,153,0.25);
+}
+
+/* Break = warm amber */
+.tl-segment--break {
+  background: linear-gradient(90deg, #b45309 0%, #f59e0b 100%);
+  box-shadow: 0 0 8px rgba(245,158,11,0.2);
+}
+
+/* ── Tooltip ── */
+.tl-tooltip {
+  background: #0d1f17;
+  border: 1px solid rgba(30,184,100,0.25);
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  min-width: 140px;
+}
+
+.tl-tooltip strong {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.tl-tooltip span {
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  font-family: 'DM Mono', monospace;
+}
+
+.tl-tooltip-dur {
+  color: rgba(255,255,255,0.8) !important;
+  font-weight: 600;
+}
+
+.tl-tooltip-date {
+  color: rgba(255,255,255,0.3) !important;
+  font-size: 10px !important;
+  margin-top: 2px;
+}
+
+/* ── Empty state (reuse from AttendanceTable) ── */
+.table-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 20px;
+  color: rgba(255,255,255,0.2);
+  gap: 12px;
+}
+.table-empty p { font-size: 14px; margin: 0; }
+
+/* ── Skeleton shimmer ── */
+.skeleton {
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.05) 0%,
+    rgba(255,255,255,0.09) 50%,
+    rgba(255,255,255,0.05) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 6px;
+  height: 14px;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (max-width: 700px) {
+  .tl-name-col { width: 140px; min-width: 140px; }
+  .att-filter-bar { gap: 8px; }
+  .att-name-input { width: 120px; }
+}
