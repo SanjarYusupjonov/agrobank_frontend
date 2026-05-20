@@ -264,3 +264,17 @@
 }
 
 .login-footer a:hover { text-decoration: underline; }
+
+/* ── Real logo image override ── */
+.logo-icon--img {
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(30,184,100,0.2);
+  padding: 4px;
+  overflow: hidden;
+}
+
+.login-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}

@@ -17,20 +17,30 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 28px 20px;
+  padding: 20px 20px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
-.sidebar-logo-icon {
-  width: 44px; height: 44px;
-  background: linear-gradient(135deg, #1eb864, #0a7a3e);
-  border-radius: 12px;
+/* ── Real logo image ── */
+.sidebar-logo-img-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  flex-shrink: 0;
-  box-shadow: 0 4px 16px rgba(30,184,100,0.3);
+  box-shadow: 0 4px 16px rgba(30,184,100,0.25);
+  border: 1px solid rgba(30,184,100,0.2);
+}
+
+.sidebar-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
 }
 
 .sidebar-brand {

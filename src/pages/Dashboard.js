@@ -34,8 +34,10 @@ const Dashboard = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await attendanceAPI.getAll();
-      setData(res.data);
+      const res = await attendanceAPI.getAll(0, 100);
+      // /attendance/timeline returns Page<T>: { content: [...], totalElements, ... }
+      const payload = res.data;
+      setData(Array.isArray(payload) ? payload : (payload?.content ?? []));
       setLastUpdated(new Date());
     } catch (e) {
       console.error(e);

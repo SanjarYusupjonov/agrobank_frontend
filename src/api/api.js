@@ -7,14 +7,12 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach JWT token to every request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// Redirect to login on 401
 api.interceptors.response.use(
   (res) => res,
   (err) => {
@@ -27,26 +25,48 @@ api.interceptors.response.use(
   }
 );
 
-// Auth APIs
 export const authAPI = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
 };
 
-// Department APIs
 export const departmentAPI = {
   getAll: () => api.get('/department/getAll'),
 };
 
-// Attendance APIs
 export const attendanceAPI = {
-  getAll: () => api.get('/attendance/timeline'),
-  getAllTimelinesByDepartment: (departmentId) =>
-    api.get('/attendance/timelineByDepartment', { params: { departmentId } }),
-  searchByName: (name) =>
-    api.get('/attendance/timelineByName', { params: { name } }),
+  /**
+   * Unified /attendance/timeline endpoint.
+   * Caller passes only the relevant params (one filter at a time).
+   *
+   * Supported combinations (matches backend priority order):
+   *   { departmentId }          → ?departmentId=…
+   *   { name }                  → ?name=…
+   *   { date }                  → ?date=…          (LocalDate: "YYYY-MM-DD")
+   *   { fromDate, toDate }      → ?fromDate=…&toDate=…  (LocalDateTime: "YYYY-MM-DDTHH:mm:ss")
+   *   {}                        → all timelines
+   *
+   * Always adds page + size.
+   */
+  getTimeline: (params = {}) => {
+    const { page = 0, size = 10, ...filters } = params;
+    // Strip undefined/null/empty values
+    const cleanFilters = Object.fromEntries(
+      Object.entries(filters).filter(([, v]) => v !== undefined && v !== null && v !== '')
+    );
+    return api.get('/attendance/timeline', {
+      params: { ...cleanFilters, page, size },
+    });
+  },
+
+  // Legacy compat
   getByDateRange: (fromDate, toDate) =>
-    api.get('/attendance/getByDateRange', { params: { fromDate, toDate } }),
+    api.get('/attendance/timeline', {
+      params: { fromDate, toDate },
+    }),
+
+  getAll: (page = 0, size = 10) =>
+    api.get('/attendance/timeline', { params: { page, size } }),
 };
 
 export default api;

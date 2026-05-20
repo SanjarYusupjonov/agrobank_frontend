@@ -3,15 +3,16 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, ClipboardList, Search,
-  Calendar, LogOut, Building2, ChevronRight
+  Calendar, LogOut, ChevronRight
 } from 'lucide-react';
+import logo from '../assets/logo226.jpg';
 import './Sidebar.css';
 
 const NAV = [
   { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
   { to: '/attendance', icon: <ClipboardList size={18} />, label: 'Barcha Davomat' },
   { to: '/search', icon: <Search size={18} />, label: 'Qidiruv' },
-  { to: '/by-date', icon: <Calendar size={18} />, label: 'Sana bo\'yicha' },
+  { to: '/by-date', icon: <Calendar size={18} />, label: "Sana bo'yicha" },
 ];
 
 const Sidebar = () => {
@@ -26,8 +27,8 @@ const Sidebar = () => {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        <div className="sidebar-logo-icon">
-          <Building2 size={22} />
+        <div className="sidebar-logo-img-wrap">
+          <img src={logo} alt="Agrobank Logo" className="sidebar-logo-img" />
         </div>
         <div>
           <div className="sidebar-brand">AGROBANK</div>

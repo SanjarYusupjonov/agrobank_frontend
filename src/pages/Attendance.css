@@ -1,4 +1,8 @@
-/* ── Filter bar extended ── */
+/* ══════════════════════════════════════════════
+   Attendance.css  –  Timeline + Pagination
+   ══════════════════════════════════════════════ */
+
+/* ── Filter bar ── */
 .att-filter-bar {
   display: flex;
   align-items: center;
@@ -31,7 +35,6 @@
   outline: none;
   transition: border-color 0.2s;
 }
-
 .att-name-input::placeholder { color: rgba(255,255,255,0.25); }
 .att-name-input:focus { border-color: rgba(30,184,100,0.4); }
 
@@ -49,24 +52,6 @@
 }
 .att-name-clear:hover { color: rgba(255,255,255,0.7); }
 
-.att-search-btn {
-  padding: 7px 14px;
-  background: rgba(30,184,100,0.1);
-  border: 1px solid rgba(30,184,100,0.2);
-  border-radius: 8px;
-  color: #1eb864;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-.att-search-btn:hover {
-  background: rgba(30,184,100,0.18);
-  border-color: rgba(30,184,100,0.35);
-}
-
 .att-date-input {
   padding: 7px 12px;
   background: rgba(255,255,255,0.06);
@@ -82,6 +67,17 @@
 }
 .att-date-input:focus { border-color: rgba(30,184,100,0.4); }
 
+/* Total badge top-right */
+.tl-total-badge {
+  font-size: 12px;
+  color: rgba(255,255,255,0.3);
+  padding: 6px 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+}
+.tl-total-badge strong { color: rgba(255,255,255,0.65); }
+
 /* ── Timeline container ── */
 .timeline-container {
   background: rgba(255,255,255,0.02);
@@ -90,7 +86,7 @@
   overflow: hidden;
 }
 
-/* ── Header row (hour labels) ── */
+/* ── Hour header ── */
 .tl-header-row {
   display: flex;
   align-items: center;
@@ -106,6 +102,15 @@
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+/* date label col — same width as name col in date rows */
+.tl-date-label-col {
+  width: 220px;
+  min-width: 220px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
 }
 
 .tl-bar-col {
@@ -129,18 +134,20 @@
   user-select: none;
 }
 
-/* ── Employee row ── */
-.tl-employee-row {
+/* ── Employee block ── */
+.tl-employee-block {
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.tl-employee-block:last-child { border-bottom: none; }
+
+.tl-employee-header {
   display: flex;
   align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-  transition: background 0.15s;
+  gap: 10px;
+  padding: 12px 16px 8px;
+  background: rgba(255,255,255,0.015);
 }
-.tl-employee-row:last-child { border-bottom: none; }
-.tl-employee-row:hover { background: rgba(255,255,255,0.025); }
 
-/* ── Avatar & name ── */
 .tl-avatar {
   width: 34px;
   height: 34px;
@@ -165,9 +172,9 @@
 }
 
 .tl-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.9);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.92);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -176,10 +183,21 @@
 .tl-summary {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  color: rgba(255,255,255,0.35);
+  gap: 6px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.45);
   font-family: 'DM Mono', monospace;
+}
+
+.tl-dept-badge {
+  padding: 1px 8px;
+  background: rgba(100,150,255,0.1);
+  border: 1px solid rgba(100,150,255,0.18);
+  border-radius: 20px;
+  font-size: 10px;
+  color: #93b4ff;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
 }
 
 .tl-dot {
@@ -187,24 +205,56 @@
   height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
+  display: inline-block;
+}
+.tl-dot--work  { background: #34d399; }
+.tl-dot--break { background: #f59e0b; }
+
+/* ── Date row ── */
+.tl-date-row {
+  display: flex;
+  align-items: center;
+  padding: 7px 0;
+  border-top: 1px solid rgba(255,255,255,0.03);
+  transition: background 0.12s;
+}
+.tl-date-row:hover { background: rgba(255,255,255,0.02); }
+
+.tl-date-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.tl-dot--work { background: #34d399; }
-.tl-dot--break { background: #f59e0b; }
+.tl-date-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.65);
+  font-family: 'DM Mono', monospace;
+  white-space: nowrap;
+}
+
+.tl-date-durations {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.38);
+  font-family: 'DM Mono', monospace;
+}
 
 /* ── Track & segments ── */
 .tl-track {
   position: relative;
-  height: 24px;
+  height: 22px;
   background: rgba(255,255,255,0.04);
-  border-radius: 6px;
+  border-radius: 5px;
   overflow: visible;
 }
 
 .tl-gridline {
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: 0; bottom: 0;
   width: 1px;
   background: rgba(255,255,255,0.05);
   pointer-events: none;
@@ -213,67 +263,113 @@
 .tl-segment {
   position: absolute;
   top: 2px;
-  height: 20px;
+  height: 18px;
   border-radius: 4px;
   cursor: pointer;
   transition: filter 0.15s, transform 0.1s;
 }
-
 .tl-segment:hover {
-  filter: brightness(1.25);
+  filter: brightness(1.3);
   transform: scaleY(1.15);
   z-index: 10;
 }
 
-/* Work = teal-green gradient */
 .tl-segment--work {
   background: linear-gradient(90deg, #059669 0%, #34d399 100%);
-  box-shadow: 0 0 8px rgba(52,211,153,0.25);
+  box-shadow: 0 0 8px rgba(52,211,153,0.2);
 }
-
-/* Break = warm amber */
 .tl-segment--break {
-  background: linear-gradient(90deg, #b45309 0%, #f59e0b 100%);
-  box-shadow: 0 0 8px rgba(245,158,11,0.2);
+  background: linear-gradient(90deg, #92400e 0%, #f59e0b 100%);
+  box-shadow: 0 0 8px rgba(245,158,11,0.18);
 }
 
 /* ── Tooltip ── */
 .tl-tooltip {
-  background: #0d1f17;
-  border: 1px solid rgba(30,184,100,0.25);
+  background: #0c1c14;
+  border: 1px solid rgba(30,184,100,0.22);
   border-radius: 10px;
-  padding: 8px 12px;
+  padding: 9px 13px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-  min-width: 140px;
+  gap: 4px;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.55);
+  min-width: 130px;
 }
 
-.tl-tooltip strong {
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
+.tl-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.tl-tooltip span {
-  font-size: 11px;
-  color: rgba(255,255,255,0.55);
+.tl-tooltip strong { font-size: 12px; font-weight: 700; color: #fff; }
+
+.tl-tooltip-time {
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.6);
   font-family: 'DM Mono', monospace;
 }
 
 .tl-tooltip-dur {
-  color: rgba(255,255,255,0.8) !important;
+  font-size: 11px;
+  color: #34d399;
+  font-family: 'DM Mono', monospace;
   font-weight: 600;
 }
 
-.tl-tooltip-date {
-  color: rgba(255,255,255,0.3) !important;
-  font-size: 10px !important;
-  margin-top: 2px;
+/* ── Pagination ── */
+.tl-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 20px;
+  padding-bottom: 8px;
 }
 
-/* ── Empty state (reuse from AttendanceTable) ── */
+.tl-page-btn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.55);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tl-page-btn:hover:not(:disabled) {
+  background: rgba(30,184,100,0.1);
+  border-color: rgba(30,184,100,0.25);
+  color: #4ade80;
+}
+
+.tl-page-btn--active {
+  background: rgba(30,184,100,0.15) !important;
+  border-color: rgba(30,184,100,0.35) !important;
+  color: #4ade80 !important;
+  font-weight: 700 !important;
+}
+
+.tl-page-nav:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.tl-page-ellipsis {
+  color: rgba(255,255,255,0.25);
+  font-size: 14px;
+  padding: 0 2px;
+}
+
+/* ── Empty ── */
 .table-empty {
   display: flex;
   flex-direction: column;
@@ -285,7 +381,7 @@
 }
 .table-empty p { font-size: 14px; margin: 0; }
 
-/* ── Skeleton shimmer ── */
+/* ── Skeleton ── */
 .skeleton {
   background: linear-gradient(90deg,
     rgba(255,255,255,0.05) 0%,
@@ -297,12 +393,119 @@
   height: 14px;
 }
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
+  0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
 
 @media (max-width: 700px) {
-  .tl-name-col { width: 140px; min-width: 140px; }
-  .att-filter-bar { gap: 8px; }
+  .tl-name-col, .tl-date-label-col { width: 130px; min-width: 130px; }
   .att-name-input { width: 120px; }
+  .att-filter-bar { gap: 8px; }
+}
+
+/* ── Date range filter bar (2-qator) ── */
+.att-daterange-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 11px 16px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.att-daterange-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255,255,255,0.4);
+  font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.att-daterange-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.att-daterange-arrow {
+  color: rgba(255,255,255,0.2);
+  flex-shrink: 0;
+}
+
+/* Ko'rish tugmasi — quick-btn bilan uyg'un */
+.att-daterange-inputs .att-search-btn {
+  padding: 7px 16px;
+  background: rgba(30,184,100,0.08);
+  border: 1px solid rgba(30,184,100,0.18);
+  border-radius: 20px;
+  color: #1eb864;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.att-daterange-inputs .att-search-btn:hover:not(:disabled) {
+  background: rgba(30,184,100,0.15);
+  border-color: rgba(30,184,100,0.3);
+}
+.att-daterange-inputs .att-search-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.att-daterange-clear {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  background: rgba(220,50,50,0.08);
+  border: 1px solid rgba(220,50,50,0.18);
+  border-radius: 8px;
+  color: #f87171;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.att-daterange-clear:hover {
+  background: rgba(220,50,50,0.15);
+  border-color: rgba(220,50,50,0.3);
+}
+
+.att-daterange-active-label {
+  margin-left: auto;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  color: rgba(30,184,100,0.7);
+  padding: 4px 10px;
+  background: rgba(30,184,100,0.07);
+  border: 1px solid rgba(30,184,100,0.15);
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* ── Tezkor tugmalar (daterange bar ichida) ── */
+.att-quick-ranges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.att-quick-label {
+  font-size: 12px;
+  color: rgba(255,255,255,0.3);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
 }

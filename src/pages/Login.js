@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Eye, EyeOff, LogIn, Building2 } from 'lucide-react';
+import { Eye, EyeOff, LogIn } from 'lucide-react';
+import logo from '../assets/logo226.jpg';
 import './Login.css';
 
 const Login = () => {
@@ -28,8 +29,8 @@ const Login = () => {
 
       <div className="login-card">
         <div className="login-logo">
-          <div className="logo-icon">
-            <Building2 size={28} />
+          <div className="logo-icon logo-icon--img">
+            <img src={logo} alt="Agrobank" className="login-logo-img" />
           </div>
           <div className="logo-text">
             <span className="logo-main">AGROBANK</span>
