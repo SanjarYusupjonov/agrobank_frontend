@@ -11,8 +11,8 @@ import './Sidebar.css';
 const NAV = [
   { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
   { to: '/attendance', icon: <ClipboardList size={18} />, label: 'Barcha Davomat' },
-  { to: '/search', icon: <Search size={18} />, label: 'Qidiruv' },
-  { to: '/by-date', icon: <Calendar size={18} />, label: "Sana bo'yicha" },
+  // { to: '/search', icon: <Search size={18} />, label: 'Qidiruv' },
+  // { to: '/by-date', icon: <Calendar size={18} />, label: "Sana bo'yicha" },
 ];
 
 const Sidebar = () => {

@@ -7,9 +7,9 @@ import './Attendance.css';
 const PAGE_SIZE = 10;
 
 const Attendance = () => {
-  // ── Joriy user ma'lumotlari ─────────────────────────────────────────────────
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
   const isDeptHead  = currentUser.userType === 'DEPARTMENT_HEAD';
+
   const [rows, setRows]             = useState([]);
   const [pagination, setPagination] = useState({ page: 0, totalPages: 0, totalElements: 0 });
   const [loading, setLoading]       = useState(false);
@@ -17,36 +17,34 @@ const Attendance = () => {
 
   const [departments, setDepartments] = useState([]);
 
-  // ── Filterlar — HAMMASI PARALLEL, biri boshqasini tozalamaydi ──────────────
-  // DEPARTMENT_HEAD bo'lsa backend o'zi department ni majburlaydi, deptName bo'sh qoladi
-  const [deptName, setDeptName]     = useState('');        // department nomi (string)
-  const [nameInput, setNameInput]   = useState('');        // UI input
-  const [nameFilter, setNameFilter] = useState('');        // debounced
-  const [dateFilter, setDateFilter] = useState('');        // kunlik bitta sana
+  // deptId — select value (string), backend ga Number(deptId) yuboriladi
+  const [deptId, setDeptId]         = useState('');
+  const [nameInput, setNameInput]   = useState('');
+  const [nameFilter, setNameFilter] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
   const [fromDate, setFromDate]     = useState('');
   const [toDate, setToDate]         = useState('');
-  const [activeFrom, setActiveFrom] = useState('');        // "Ko'rish" bosilganda aktiv bo'ladi
+  const [activeFrom, setActiveFrom] = useState('');
   const [activeTo, setActiveTo]     = useState('');
 
   const debounceRef = useRef(null);
 
-  // ── Departmentlar ──────────────────────────────────────────────────────────
   useEffect(() => {
     departmentAPI.getAll()
       .then(res => setDepartments(res.data || []))
       .catch(() => {});
   }, []);
 
-  // ── Fetch — barcha aktiv filterlar birgalikda yuboriladi ───────────────────
   const fetchPage = useCallback(async (page = 0) => {
     setLoading(true);
     setError('');
     try {
       const params = { page, size: PAGE_SIZE };
 
-      if (deptName)               params.departmentName = deptName;
-      if (nameFilter)             params.name           = nameFilter;
-      if (dateFilter)             params.date           = dateFilter;
+      // departmentId — backend Number kutadi, select string beradi → Number() bilan yuboramiz
+      if (deptId)                 params.departmentId = Number(deptId);
+      if (nameFilter)             params.name         = nameFilter;
+      if (dateFilter)             params.date         = dateFilter;
       if (activeFrom && activeTo) {
         params.fromDate = `${activeFrom}T00:00:00`;
         params.toDate   = `${activeTo}T23:59:59`;
@@ -65,11 +63,10 @@ const Attendance = () => {
     } finally {
       setLoading(false);
     }
-  }, [deptName, nameFilter, dateFilter, activeFrom, activeTo]);
+  }, [deptId, nameFilter, dateFilter, activeFrom, activeTo]);
 
   useEffect(() => { fetchPage(0); }, [fetchPage]);
 
-  // ── Handlerlar ─────────────────────────────────────────────────────────────
   const handleNameInput = (val) => {
     setNameInput(val);
     clearTimeout(debounceRef.current);
@@ -83,10 +80,8 @@ const Attendance = () => {
   };
 
   const clearDateRange = () => {
-    setFromDate('');
-    setToDate('');
-    setActiveFrom('');
-    setActiveTo('');
+    setFromDate(''); setToDate('');
+    setActiveFrom(''); setActiveTo('');
   };
 
   const setQuickRange = (days) => {
@@ -95,27 +90,25 @@ const Attendance = () => {
     if (days > 0) from.setDate(from.getDate() - days);
     const fmt = (d) => d.toISOString().split('T')[0];
     const f = fmt(from), t = fmt(to);
-    setFromDate(f);
-    setToDate(t);
-    setActiveFrom(f);
-    setActiveTo(t);
+    setFromDate(f); setToDate(t);
+    setActiveFrom(f); setActiveTo(t);
   };
 
-  // Hech bo'lmasa bitta filter aktiv ekanini tekshirish
-  const hasAnyFilter = !!(deptName || nameFilter || dateFilter || (activeFrom && activeTo));
+  const hasAnyFilter = !!(deptId || nameFilter || dateFilter || (activeFrom && activeTo));
 
   const clearAll = () => {
-    if (!isDeptHead) setDeptName('');
-    setNameInput('');
-    setNameFilter('');
+    if (!isDeptHead) setDeptId('');
+    setNameInput(''); setNameFilter('');
     setDateFilter('');
-    setFromDate('');
-    setToDate('');
-    setActiveFrom('');
-    setActiveTo('');
+    setFromDate(''); setToDate('');
+    setActiveFrom(''); setActiveTo('');
   };
 
   const isDateRangeActive = !!(activeFrom && activeTo);
+
+  // Bo'lim nomini ID dan topish — String() bilan type mismatch oldini oladi
+  const deptName = departments.find(d => String(d.id) === String(deptId))?.name || '';
+
   const grouped = buildGrouped(rows);
 
   return (
@@ -134,28 +127,26 @@ const Attendance = () => {
         </div>
       </div>
 
-      {/* ── Filter bar (1-qator) ── */}
+      {/* ── Filter bar ── */}
       <div className="att-filter-bar">
 
-        {/* Bo'lim — faqat ADMIN ko'radi */}
         {!isDeptHead && (
-        <div className="filter-item">
-          <Filter size={14} />
-          <span>Bo'lim:</span>
-          <select
-            value={deptName}
-            onChange={e => setDeptName(e.target.value)}
-            className="filter-select"
-          >
-            <option value="">Barcha bo'limlar</option>
-            {departments.map(d => (
-              <option key={d.id} value={d.name}>{d.name}</option>
-            ))}
-          </select>
-        </div>
+          <div className="filter-item">
+            <Filter size={14} />
+            <span>Bo'lim:</span>
+            <select
+              value={deptId}
+              onChange={e => setDeptId(e.target.value)}
+              className="filter-select"
+            >
+              <option value="">Barcha bo'limlar</option>
+              {departments.map(d => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
+            </select>
+          </div>
         )}
 
-        {/* Ism */}
         <div className="filter-item att-name-filter">
           <Search size={14} />
           <span>Ism:</span>
@@ -175,7 +166,6 @@ const Attendance = () => {
           </div>
         </div>
 
-        {/* Kunlik sana */}
         <div className="filter-item">
           <Calendar size={14} />
           <span>Sana:</span>
@@ -196,7 +186,6 @@ const Attendance = () => {
           )}
         </div>
 
-        {/* Aktiv filterlar ko'rsatkichi + Hammasini tozalash */}
         <div className="result-count">
           {!loading && (
             <span>{pagination.totalElements} ta qayd &nbsp;·&nbsp; {pagination.totalPages} sahifa</span>
@@ -215,13 +204,13 @@ const Attendance = () => {
         </div>
       </div>
 
-      {/* ── Aktif filterlar ko'rsatkichi ── */}
+      {/* ── Aktif filter chiplari ── */}
       {hasAnyFilter && (
         <div className="att-active-filters">
-          {deptName && !isDeptHead && (
+          {deptId && !isDeptHead && (
             <span className="att-filter-chip">
               Bo'lim: <strong>{deptName}</strong>
-              <button onClick={() => setDeptName('')}><X size={11} /></button>
+              <button onClick={() => setDeptId('')}><X size={11} /></button>
             </span>
           )}
           {nameFilter && (
@@ -238,21 +227,20 @@ const Attendance = () => {
           )}
           {isDateRangeActive && (
             <span className="att-filter-chip">
-              Sana: <strong>{activeFrom} → {activeTo}</strong>
+              Oraliq: <strong>{activeFrom} → {activeTo}</strong>
               <button onClick={clearDateRange}><X size={11} /></button>
             </span>
           )}
         </div>
       )}
 
-      {/* ── Sana oraligi filtri (2-qator) ── */}
+      {/* ── Sana oralig'i filtri ── */}
       <div className={`att-daterange-bar${isDateRangeActive ? ' att-daterange-bar--active' : ''}`}>
         <div className="att-daterange-label">
           <Calendar size={13} />
           <span>Sana oralig'i:</span>
         </div>
 
-        {/* Tezkor tugmalar */}
         <div className="att-quick-ranges">
           <span className="att-quick-label">Tezkor:</span>
           {[
@@ -327,7 +315,6 @@ const Attendance = () => {
   );
 };
 
-// ─── Group rows by name → date ────────────────────────────────────────────────
 function buildGrouped(rows) {
   const byName = {};
   rows.forEach(row => {
@@ -346,7 +333,6 @@ function buildGrouped(rows) {
   }));
 }
 
-// ─── 24-hour header ───────────────────────────────────────────────────────────
 const TimelineHeader = () => (
   <div className="tl-header-row">
     <div className="tl-name-col" />
@@ -363,7 +349,6 @@ const TimelineHeader = () => (
   </div>
 );
 
-// ─── Employee block ───────────────────────────────────────────────────────────
 const EmployeeBlock = ({ employee }) => {
   const totalWork = employee.dates
     .flatMap(d => d.intervals)
@@ -394,7 +379,6 @@ const EmployeeBlock = ({ employee }) => {
   );
 };
 
-// ─── Single date row ──────────────────────────────────────────────────────────
 const DateRow = ({ date, intervals }) => {
   const [tooltip, setTooltip] = useState(null);
 
@@ -459,7 +443,6 @@ const DateRow = ({ date, intervals }) => {
   );
 };
 
-// ─── Pagination ───────────────────────────────────────────────────────────────
 const Pagination = ({ page, totalPages, onPageChange }) => {
   if (totalPages <= 1) return null;
   const pages = buildPageNumbers(page, totalPages);
@@ -504,7 +487,6 @@ function buildPageNumbers(current, total) {
   return result;
 }
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
 const TimelineSkeleton = () => (
   <div className="timeline-container">
     <TimelineHeader />
@@ -534,7 +516,6 @@ const TimelineSkeleton = () => (
   </div>
 );
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 function toMin(t) {
   if (!t) return 0;
   const parts = t.split(':').map(Number);
