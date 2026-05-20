@@ -4,76 +4,60 @@ import { ClipboardList, Filter, Search, X, Calendar, ArrowRight, ChevronLeft, Ch
 import './PageCommon.css';
 import './Attendance.css';
 
-// ─── Spring Page<T> response shape ───────────────────────────────────────────
-// {
-//   content: [ { name, date, department, intervals: [{start,end,type}] }, … ],
-//   totalElements, totalPages, number, size, first, last
-// }
-
 const PAGE_SIZE = 10;
 
 const Attendance = () => {
+  // ── Joriy user ma'lumotlari ─────────────────────────────────────────────────
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const isDeptHead  = currentUser.userType === 'DEPARTMENT_HEAD';
   const [rows, setRows]             = useState([]);
   const [pagination, setPagination] = useState({ page: 0, totalPages: 0, totalElements: 0 });
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState('');
 
   const [departments, setDepartments] = useState([]);
-  const [deptId, setDeptId]         = useState('');
 
-  const [nameInput, setNameInput]   = useState('');
-  const [nameFilter, setNameFilter] = useState('');
-
-  const [dateFilter, setDateFilter] = useState('');
-
+  // ── Filterlar — HAMMASI PARALLEL, biri boshqasini tozalamaydi ──────────────
+  // DEPARTMENT_HEAD bo'lsa backend o'zi department ni majburlaydi, deptName bo'sh qoladi
+  const [deptName, setDeptName]     = useState('');        // department nomi (string)
+  const [nameInput, setNameInput]   = useState('');        // UI input
+  const [nameFilter, setNameFilter] = useState('');        // debounced
+  const [dateFilter, setDateFilter] = useState('');        // kunlik bitta sana
   const [fromDate, setFromDate]     = useState('');
   const [toDate, setToDate]         = useState('');
-  const [activeDateRange, setActiveDateRange] = useState({ from: '', to: '' });
+  const [activeFrom, setActiveFrom] = useState('');        // "Ko'rish" bosilganda aktiv bo'ladi
+  const [activeTo, setActiveTo]     = useState('');
 
   const debounceRef = useRef(null);
 
-  // ── departments ──────────────────────────────────────────────────────────
+  // ── Departmentlar ──────────────────────────────────────────────────────────
   useEffect(() => {
     departmentAPI.getAll()
       .then(res => setDepartments(res.data || []))
       .catch(() => {});
   }, []);
 
-  // ── fetch ────────────────────────────────────────────────────────────────
-  // Backend /attendance/timeline priority:
-  //   1. departmentId  → getTimelinesByDepartmentId
-  //   2. name          → getTimelinesByName
-  //   3. date          → getTimelinesByDate
-  //   4. fromDate+toDate → getTimelinesByDateRange
-  //   5. (none)        → getAllTimelines
-  //
-  // Frontend ensures only ONE filter is active at a time.
+  // ── Fetch — barcha aktiv filterlar birgalikda yuboriladi ───────────────────
   const fetchPage = useCallback(async (page = 0) => {
     setLoading(true);
     setError('');
     try {
-      // Build params: only active filter is sent
       const params = { page, size: PAGE_SIZE };
 
-      if (activeDateRange.from && activeDateRange.to) {
-        // Date range mode — fromDate/toDate only, no other filters
-        params.fromDate = `${activeDateRange.from}T00:00:00`;
-        params.toDate   = `${activeDateRange.to}T23:59:59`;
-      } else if (dateFilter) {
-        params.date = dateFilter;
-      } else if (deptId) {
-        params.departmentId = deptId;
-      } else if (nameFilter) {
-        params.name = nameFilter;
+      if (deptName)               params.departmentName = deptName;
+      if (nameFilter)             params.name           = nameFilter;
+      if (dateFilter)             params.date           = dateFilter;
+      if (activeFrom && activeTo) {
+        params.fromDate = `${activeFrom}T00:00:00`;
+        params.toDate   = `${activeTo}T23:59:59`;
       }
-      // else → no extra params → getAllTimelines
 
       const res = await attendanceAPI.getTimeline(params);
-      const p = res.data;
+      const p   = res.data;
       setRows(p.content || []);
       setPagination({
-        page:          p.number      ?? 0,
-        totalPages:    p.totalPages  ?? 0,
+        page:          p.number        ?? 0,
+        totalPages:    p.totalPages    ?? 0,
         totalElements: p.totalElements ?? 0,
       });
     } catch {
@@ -81,23 +65,28 @@ const Attendance = () => {
     } finally {
       setLoading(false);
     }
-  }, [deptId, nameFilter, dateFilter, activeDateRange]);
+  }, [deptName, nameFilter, dateFilter, activeFrom, activeTo]);
 
   useEffect(() => { fetchPage(0); }, [fetchPage]);
 
-  // ── handlers ─────────────────────────────────────────────────────────────
+  // ── Handlerlar ─────────────────────────────────────────────────────────────
   const handleNameInput = (val) => {
     setNameInput(val);
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => setNameFilter(val), 450);
   };
 
-  const clearName = () => { setNameInput(''); setNameFilter(''); };
+  const applyDateRange = () => {
+    if (!fromDate || !toDate) return;
+    setActiveFrom(fromDate);
+    setActiveTo(toDate);
+  };
 
   const clearDateRange = () => {
     setFromDate('');
     setToDate('');
-    setActiveDateRange({ from: '', to: '' });
+    setActiveFrom('');
+    setActiveTo('');
   };
 
   const setQuickRange = (days) => {
@@ -105,35 +94,33 @@ const Attendance = () => {
     const from = new Date();
     if (days > 0) from.setDate(from.getDate() - days);
     const fmt = (d) => d.toISOString().split('T')[0];
-    const f = fmt(from);
-    const t = fmt(to);
+    const f = fmt(from), t = fmt(to);
     setFromDate(f);
     setToDate(t);
-    // Clear other filters and apply immediately
-    setDeptId('');
+    setActiveFrom(f);
+    setActiveTo(t);
+  };
+
+  // Hech bo'lmasa bitta filter aktiv ekanini tekshirish
+  const hasAnyFilter = !!(deptName || nameFilter || dateFilter || (activeFrom && activeTo));
+
+  const clearAll = () => {
+    if (!isDeptHead) setDeptName('');
     setNameInput('');
     setNameFilter('');
     setDateFilter('');
-    setActiveDateRange({ from: f, to: t });
+    setFromDate('');
+    setToDate('');
+    setActiveFrom('');
+    setActiveTo('');
   };
 
-  // "Ko'rish" tugmasi — apply date range, clear other filters
-  const applyDateRange = () => {
-    if (!fromDate || !toDate) return;
-    setDeptId('');
-    setNameInput('');
-    setNameFilter('');
-    setDateFilter('');
-    setActiveDateRange({ from: fromDate, to: toDate });
-  };
-
-  const isDateRangeActive = !!(activeDateRange.from && activeDateRange.to);
-
+  const isDateRangeActive = !!(activeFrom && activeTo);
   const grouped = buildGrouped(rows);
 
   return (
     <div className="page">
-      {/* ── header ── */}
+      {/* ── Header ── */}
       <div className="page-header">
         <div className="page-title-wrap">
           <div className="page-title-icon"><ClipboardList size={20} /></div>
@@ -147,29 +134,26 @@ const Attendance = () => {
         </div>
       </div>
 
-      {/* ── filter bar (1-qator) ── */}
+      {/* ── Filter bar (1-qator) ── */}
       <div className="att-filter-bar">
 
-        {/* Bo'lim */}
+        {/* Bo'lim — faqat ADMIN ko'radi */}
+        {!isDeptHead && (
         <div className="filter-item">
           <Filter size={14} />
           <span>Bo'lim:</span>
           <select
-            value={deptId}
-            onChange={e => {
-              setDeptId(e.target.value);
-              clearName();
-              clearDateRange();
-              setDateFilter('');
-            }}
+            value={deptName}
+            onChange={e => setDeptName(e.target.value)}
             className="filter-select"
           >
             <option value="">Barcha bo'limlar</option>
             {departments.map(d => (
-              <option key={d.id} value={d.id}>{d.name}</option>
+              <option key={d.id} value={d.name}>{d.name}</option>
             ))}
           </select>
         </div>
+        )}
 
         {/* Ism */}
         <div className="filter-item att-name-filter">
@@ -181,20 +165,17 @@ const Attendance = () => {
               className="att-name-input"
               placeholder="Hodim ismi..."
               value={nameInput}
-              onChange={e => {
-                handleNameInput(e.target.value);
-                setDeptId('');
-                clearDateRange();
-                setDateFilter('');
-              }}
+              onChange={e => handleNameInput(e.target.value)}
             />
             {nameInput && (
-              <button className="att-name-clear" onClick={clearName}><X size={12} /></button>
+              <button className="att-name-clear" onClick={() => { setNameInput(''); setNameFilter(''); }}>
+                <X size={12} />
+              </button>
             )}
           </div>
         </div>
 
-        {/* Bitta sana */}
+        {/* Kunlik sana */}
         <div className="filter-item">
           <Calendar size={14} />
           <span>Sana:</span>
@@ -202,12 +183,7 @@ const Attendance = () => {
             type="date"
             className="att-date-input"
             value={dateFilter}
-            onChange={e => {
-              setDateFilter(e.target.value);
-              setDeptId('');
-              clearName();
-              clearDateRange();
-            }}
+            onChange={e => setDateFilter(e.target.value)}
           />
           {dateFilter && (
             <button
@@ -220,14 +196,56 @@ const Attendance = () => {
           )}
         </div>
 
+        {/* Aktiv filterlar ko'rsatkichi + Hammasini tozalash */}
         <div className="result-count">
           {!loading && (
             <span>{pagination.totalElements} ta qayd &nbsp;·&nbsp; {pagination.totalPages} sahifa</span>
           )}
+          {hasAnyFilter && (
+            <button
+              className="att-daterange-clear"
+              style={{ marginLeft: 8 }}
+              onClick={clearAll}
+              title="Barcha filterlarni tozalash"
+            >
+              <X size={13} />
+              <span>Tozalash</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* ── date range filter (2-qator) ── */}
+      {/* ── Aktif filterlar ko'rsatkichi ── */}
+      {hasAnyFilter && (
+        <div className="att-active-filters">
+          {deptName && !isDeptHead && (
+            <span className="att-filter-chip">
+              Bo'lim: <strong>{deptName}</strong>
+              <button onClick={() => setDeptName('')}><X size={11} /></button>
+            </span>
+          )}
+          {nameFilter && (
+            <span className="att-filter-chip">
+              Ism: <strong>{nameFilter}</strong>
+              <button onClick={() => { setNameInput(''); setNameFilter(''); }}><X size={11} /></button>
+            </span>
+          )}
+          {dateFilter && (
+            <span className="att-filter-chip">
+              Sana: <strong>{formatDate(dateFilter)}</strong>
+              <button onClick={() => setDateFilter('')}><X size={11} /></button>
+            </span>
+          )}
+          {isDateRangeActive && (
+            <span className="att-filter-chip">
+              Sana: <strong>{activeFrom} → {activeTo}</strong>
+              <button onClick={clearDateRange}><X size={11} /></button>
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* ── Sana oraligi filtri (2-qator) ── */}
       <div className={`att-daterange-bar${isDateRangeActive ? ' att-daterange-bar--active' : ''}`}>
         <div className="att-daterange-label">
           <Calendar size={13} />
@@ -242,11 +260,7 @@ const Attendance = () => {
             { label: '7 kun', days: 7  },
             { label: '30 kun', days: 30 },
           ].map(q => (
-            <button
-              key={q.days}
-              className="quick-btn"
-              onClick={() => setQuickRange(q.days)}
-            >
+            <button key={q.days} className="quick-btn" onClick={() => setQuickRange(q.days)}>
               {q.label}
             </button>
           ))}
@@ -280,17 +294,11 @@ const Attendance = () => {
             </button>
           )}
         </div>
-
-        {isDateRangeActive && (
-          <span className="att-daterange-active-label">
-            ✓ &nbsp;{activeDateRange.from} → {activeDateRange.to}
-          </span>
-        )}
       </div>
 
       {error && <div className="page-error">⚠ {error}</div>}
 
-      {/* ── timeline ── */}
+      {/* ── Timeline ── */}
       <div className="page-content">
         {loading ? (
           <TimelineSkeleton />

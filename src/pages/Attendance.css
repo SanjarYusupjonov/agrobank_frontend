@@ -509,3 +509,43 @@
   letter-spacing: 0.5px;
   white-space: nowrap;
 }
+/* ── Aktiv filterlar chip qatori ─────────────────────────────────────── */
+.att-active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 16px 0;
+}
+
+.att-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 10px;
+  border-radius: 20px;
+  background: var(--accent-subtle, #e8f0fe);
+  color: var(--accent, #2563eb);
+  font-size: 12px;
+  border: 1px solid var(--accent-border, #bfdbfe);
+}
+
+.att-filter-chip strong {
+  font-weight: 600;
+}
+
+.att-filter-chip button {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 1px;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.6;
+  border-radius: 50%;
+  transition: opacity 0.15s;
+}
+
+.att-filter-chip button:hover {
+  opacity: 1;
+}
