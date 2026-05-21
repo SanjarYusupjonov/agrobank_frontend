@@ -71,6 +71,31 @@ export const attendanceAPI = {
     return api.get('/attendance/getTimelineByEmployee', { params: cleanParams });
   },
 
+  // -----------------------------------------------------------------
+
+  exportTimeline: (params = {}) => {
+    const { page, size, ...filters } = params;
+    const cleanParams = Object.fromEntries(
+        Object.entries(filters).filter(([, v]) => v !== undefined && v !== null && v !== '')
+    );
+    return api.get('/excel/timeline/export', {
+        params: cleanParams,
+        responseType: 'blob',           // ← muhim!
+    });
+  },
+
+  exportEmployeeTimeline: (params = {}) => {
+      const cleanParams = Object.fromEntries(
+          Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
+      );
+      return api.get('/excel/getTimelineByEmployee/export', {
+          params: cleanParams,
+          responseType: 'blob',           // ← muhim!
+      });
+  },
+
+  // -----------------------------------------------------------------
+
   // Legacy compat
   getByDateRange: (fromDate, toDate) =>
     api.get('/attendance/timeline', {
@@ -79,6 +104,8 @@ export const attendanceAPI = {
 
   getAll: (page = 0, size = 10) =>
     api.get('/attendance/timeline', { params: { page, size } }),
+
+  
 };
 
 export default api;

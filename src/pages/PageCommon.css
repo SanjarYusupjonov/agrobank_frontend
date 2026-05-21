@@ -328,6 +328,29 @@
   margin-bottom: 12px;
 }
 
+.export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 16px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid #1e7e4a;
+  border-radius: 8px;
+  color: #2ecc71;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+.export-btn:hover {
+  background: rgba(46, 204, 113, 0.08);
+  border-color: #2ecc71;
+}
+.export-btn:active  { transform: scale(0.97); }
+.export-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
 @media (max-width: 700px) {
   .page { padding: 20px 16px; }
   .date-inputs { flex-direction: column; }

@@ -3,29 +3,28 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { attendanceAPI } from '../api/api';
 import {
   ArrowLeft, Calendar, ArrowRight, X, Clock, Coffee, User, Building2,
-  ChevronLeft, ChevronRight, TrendingUp
+  ChevronLeft, ChevronRight, TrendingUp, Download
 } from 'lucide-react';
 import './PageCommon.css';
 import './EmployeeTimeline.css';
 
 const EmployeeTimeline = () => {
   const { employeeName, departmentName } = useParams();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate  = useNavigate();
+  const location  = useLocation();
 
-  // URL decode qilish
   const name = decodeURIComponent(employeeName || '');
   const dept = decodeURIComponent(departmentName || '');
 
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [data, setData]         = useState(null);
+  const [loading, setLoading]   = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [error, setError]       = useState('');
 
-  // Date range filter
   const [fromDate, setFromDate] = useState('');
-  const [toDate, setToDate] = useState('');
+  const [toDate, setToDate]     = useState('');
   const [activeFrom, setActiveFrom] = useState('');
-  const [activeTo, setActiveTo] = useState('');
+  const [activeTo, setActiveTo]     = useState('');
 
   const fetchData = useCallback(async () => {
     if (!name || !dept) return;
@@ -35,9 +34,9 @@ const EmployeeTimeline = () => {
       const params = { employeeName: name, departmentName: dept };
       if (activeFrom && activeTo) {
         params.fromDate = `${activeFrom}T00:00:00`;
-        params.toDate = `${activeTo}T23:59:59`;
+        params.toDate   = `${activeTo}T23:59:59`;
       }
-      const res = await attendanceAPI.getTimelineByEmployee(params);
+      const res     = await attendanceAPI.getTimelineByEmployee(params);
       const content = res.data?.content || [];
       setData(content[0] || null);
     } catch {
@@ -61,7 +60,7 @@ const EmployeeTimeline = () => {
   };
 
   const setQuickRange = (days) => {
-    const to = new Date();
+    const to   = new Date();
     const from = new Date();
     if (days > 0) from.setDate(from.getDate() - days);
     const fmt = (d) => d.toISOString().split('T')[0];
@@ -70,9 +69,40 @@ const EmployeeTimeline = () => {
     setActiveFrom(f); setActiveTo(t);
   };
 
-  const isDateRangeActive = !!(activeFrom && activeTo);
+const handleExport = async () => {
+  console.log('1. Export boshlandi');
+  setExporting(true);
+  try {
+    const params = { employeeName: name, departmentName: dept };
+    if (activeFrom && activeTo) {
+      params.fromDate = `${activeFrom}T00:00:00`;
+      params.toDate   = `${activeTo}T23:59:59`;
+    }
+    console.log('2. Params:', params);
+    console.log('3. exportEmployeeTimeline funksiya:', attendanceAPI.exportEmployeeTimeline);
 
-  // Statistika hisoblash
+    const res = await attendanceAPI.exportEmployeeTimeline(params);
+    console.log('4. Response:', res);
+
+    const url  = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement('a');
+    link.href  = url;
+    link.setAttribute('download', `${name}.xlsx`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    console.log('5. Yuklab olindi');
+  } catch (err) {
+    console.error('Export xatosi:', err);
+    console.error('Xato detail:', err?.response?.status, err?.response?.data, err?.message);
+    alert('Export xatosi yuz berdi.');
+  } finally {
+    setExporting(false);
+  }
+};
+
+  const isDateRangeActive = !!(activeFrom && activeTo);
   const stats = calcStats(data);
 
   return (
@@ -108,6 +138,14 @@ const EmployeeTimeline = () => {
               <TrendingUp size={13} />
               <span><strong>{stats.totalDays}</strong> kun</span>
             </div>
+            <button
+              className="export-btn"
+              onClick={handleExport}
+              disabled={loading || exporting}
+            >
+              <Download size={14} />
+              {exporting ? 'Yuklanmoqda...' : 'Excel'}
+            </button>
           </div>
         )}
       </div>
@@ -222,18 +260,18 @@ const DateBlock = ({ dateResponse }) => {
     .filter(iv => iv.type !== 'lunch')
     .map(iv => {
       const startMin = toMin(iv.start);
-      const endMin = toMin(iv.end);
+      const endMin   = toMin(iv.end);
       return {
-        left: (startMin / 1440) * 100,
-        width: Math.max(((endMin - startMin) / 1440) * 100, 0.3),
-        type: iv.type,
-        start: iv.start,
-        end: iv.end,
+        left:     (startMin / 1440) * 100,
+        width:    Math.max(((endMin - startMin) / 1440) * 100, 0.3),
+        type:     iv.type,
+        start:    iv.start,
+        end:      iv.end,
         duration: endMin - startMin,
       };
     });
 
-  const workMin = segments.filter(s => s.type === 'work').reduce((a, s) => a + s.duration, 0);
+  const workMin  = segments.filter(s => s.type === 'work').reduce((a, s) => a + s.duration, 0);
   const breakMin = segments.filter(s => s.type === 'break').reduce((a, s) => a + s.duration, 0);
 
   return (
@@ -271,7 +309,7 @@ const DateBlock = ({ dateResponse }) => {
             style={{
               position: 'fixed',
               left: tooltip.x + 14,
-              top: tooltip.y - 58,
+              top:  tooltip.y - 58,
               pointerEvents: 'none',
               zIndex: 9999,
             }}
@@ -306,9 +344,9 @@ const EtSkeleton = () => (
               className="skeleton"
               style={{
                 position: 'absolute',
-                left: `${10 + i * 5}%`,
-                width: `${25 + i * 8}%`,
-                height: '100%',
+                left:     `${10 + i * 5}%`,
+                width:    `${25 + i * 8}%`,
+                height:   '100%',
                 borderRadius: 6,
               }}
             />
@@ -326,7 +364,7 @@ function calcStats(data) {
   (data.dateResponses || []).forEach(dr => {
     (dr.intervalsResponses || []).forEach(iv => {
       const min = toMin(iv.end) - toMin(iv.start);
-      if (iv.type === 'work') totalWork += min;
+      if (iv.type === 'work')       totalWork  += min;
       else if (iv.type === 'break') totalBreak += min;
     });
   });

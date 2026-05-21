@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { attendanceAPI, departmentAPI } from '../api/api';
 import { useNavigate } from 'react-router-dom';
-import { ClipboardList, Filter, Search, X, Calendar, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ClipboardList, Filter, Search, X, Calendar, ArrowRight, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import './PageCommon.css';
 import './Attendance.css';
 
@@ -14,11 +14,11 @@ const Attendance = () => {
   const [rows, setRows]             = useState([]);
   const [pagination, setPagination] = useState({ page: 0, totalPages: 0, totalElements: 0 });
   const [loading, setLoading]       = useState(false);
+  const [exporting, setExporting]   = useState(false);
   const [error, setError]           = useState('');
 
   const [departments, setDepartments] = useState([]);
 
-  // deptId — select value (string), backend ga Number(deptId) yuboriladi
   const [deptId, setDeptId]         = useState('');
   const [nameInput, setNameInput]   = useState('');
   const [nameFilter, setNameFilter] = useState('');
@@ -41,8 +41,6 @@ const Attendance = () => {
     setError('');
     try {
       const params = { page, size: PAGE_SIZE };
-
-      // departmentId — backend Number kutadi, select string beradi → Number() bilan yuboramiz
       if (deptId)                 params.departmentId = Number(deptId);
       if (nameFilter)             params.name         = nameFilter;
       if (dateFilter)             params.date         = dateFilter;
@@ -50,7 +48,6 @@ const Attendance = () => {
         params.fromDate = `${activeFrom}T00:00:00`;
         params.toDate   = `${activeTo}T23:59:59`;
       }
-
       const res = await attendanceAPI.getTimeline(params);
       const p   = res.data;
       setRows(p.content || []);
@@ -105,12 +102,36 @@ const Attendance = () => {
     setActiveFrom(''); setActiveTo('');
   };
 
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const params = {};
+      if (deptId)                 params.departmentId = Number(deptId);
+      if (nameFilter)             params.name         = nameFilter;
+      if (dateFilter)             params.date         = dateFilter;
+      if (activeFrom && activeTo) {
+        params.fromDate = `${activeFrom}T00:00:00`;
+        params.toDate   = `${activeTo}T23:59:59`;
+      }
+      const res  = await attendanceAPI.exportTimeline(params);
+      const url  = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href  = url;
+      link.setAttribute('download', 'davomat.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      alert('Export xatosi yuz berdi.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const isDateRangeActive = !!(activeFrom && activeTo);
-
-  // Bo'lim nomini ID dan topish — String() bilan type mismatch oldini oladi
   const deptName = departments.find(d => String(d.id) === String(deptId))?.name || '';
-
-  const grouped = buildGrouped(rows);
+  const grouped  = buildGrouped(rows);
 
   return (
     <div className="page">
@@ -123,14 +144,23 @@ const Attendance = () => {
             <p className="page-desc">Hodimlar kunlik ish vaqti diagrammasi</p>
           </div>
         </div>
-        <div className="tl-total-badge">
-          Jami: <strong>{pagination.totalElements}</strong> qayd
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div className="tl-total-badge">
+            Jami: <strong>{pagination.totalElements}</strong> qayd
+          </div>
+          <button
+            className="export-btn"
+            onClick={handleExport}
+            disabled={loading || exporting}
+          >
+            <Download size={14} />
+            {exporting ? 'Yuklanmoqda...' : 'Excel'}
+          </button>
         </div>
       </div>
 
       {/* ── Filter bar ── */}
       <div className="att-filter-bar">
-
         {!isDeptHead && (
           <div className="filter-item">
             <Filter size={14} />
@@ -241,7 +271,6 @@ const Attendance = () => {
           <Calendar size={13} />
           <span>Sana oralig'i:</span>
         </div>
-
         <div className="att-quick-ranges">
           <span className="att-quick-label">Tezkor:</span>
           {[
@@ -254,7 +283,6 @@ const Attendance = () => {
             </button>
           ))}
         </div>
-
         <div className="att-daterange-inputs">
           <input
             type="date"
@@ -300,8 +328,8 @@ const Attendance = () => {
           <>
             <div className="timeline-container">
               <TimelineHeader />
-              {grouped.map(employee => (
-                <EmployeeBlock key={employee.name} employee={employee} />
+              {grouped.map((employee, idx) => (
+                <EmployeeBlock key={`${employee.name}-${employee.dates[0]?.date}-${idx}`} employee={employee} />
               ))}
             </div>
             <Pagination
@@ -317,20 +345,10 @@ const Attendance = () => {
 };
 
 function buildGrouped(rows) {
-  const byName = {};
-  rows.forEach(row => {
-    const key = row.name || "Noma'lum";
-    if (!byName[key]) byName[key] = { name: key, department: row.department, dateMap: {} };
-    const d = row.date || 'N/A';
-    if (!byName[key].dateMap[d]) byName[key].dateMap[d] = [];
-    byName[key].dateMap[d].push(...(row.intervals || []));
-  });
-  return Object.values(byName).map(emp => ({
-    name: emp.name,
-    department: emp.department,
-    dates: Object.entries(emp.dateMap)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, intervals]) => ({ date, intervals })),
+  return rows.map(row => ({
+    name: row.name || "Noma'lum",
+    department: row.department,
+    dates: [{ date: row.date || 'N/A', intervals: row.intervals || [] }],
   }));
 }
 
