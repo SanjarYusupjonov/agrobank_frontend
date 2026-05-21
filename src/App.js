@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Attendance from './pages/Attendance';
 import SearchPage from './pages/SearchPage';
 import ByDate from './pages/ByDate';
+import EmployeeTimeline from './pages/EmployeeTimeline';
 
 function App() {
   return (
@@ -46,6 +47,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Layout><ByDate /></Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employee/:employeeName/:departmentName"
+            element={
+              <ProtectedRoute>
+                <Layout><EmployeeTimeline /></Layout>
               </ProtectedRoute>
             }
           />

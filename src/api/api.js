@@ -60,6 +60,17 @@ export const attendanceAPI = {
     });
   },
 
+  /**
+   * GET /attendance/getTimelineByEmployee
+   * params: { employeeName, departmentName, fromDate?, toDate? }
+   */
+  getTimelineByEmployee: (params = {}) => {
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
+    );
+    return api.get('/attendance/getTimelineByEmployee', { params: cleanParams });
+  },
+
   // Legacy compat
   getByDateRange: (fromDate, toDate) =>
     api.get('/attendance/timeline', {
