@@ -27,31 +27,35 @@ api.interceptors.response.use(
 
 export const authAPI = {
   register: (data) => api.post('/auth/register', data),
-  login: (data) => api.post('/auth/login', data),
-  me:()     => api.get('/auth/me'),
+  login:    (data) => api.post('/auth/login', data),
+  me:       ()     => api.get('/auth/me'),
 };
 
 export const departmentAPI = {
-  getAll: () => api.get('/department/getAll'),
+  getAll: (name) => api.get('/department/getAll', {
+    params: name ? { name } : {},
+  }),
+};
+
+export const departmentHeadsAPI = {
+  /** GET /heads/getAllByFilter */
+  getAll: ({ page = 0, size = 10, query, departmentId } = {}) => {
+    const params = { page, size };
+    if (query        !== undefined && query        !== '') params.query        = query;
+    if (departmentId !== undefined && departmentId !== '') params.departmentId = departmentId;
+    return api.get('/heads/getAllByFilter', { params });
+  },
+
+  /** POST /heads/create */
+  create: (data) => api.post('/heads/create', data),
+
+  /** DELETE /heads/delete/:id */
+  delete: (id) => api.delete(`/heads/delete/${id}`),
 };
 
 export const attendanceAPI = {
-  /**
-   * Unified /attendance/timeline endpoint.
-   * Caller passes only the relevant params (one filter at a time).
-   *
-   * Supported combinations (matches backend priority order):
-   *   { departmentId }          → ?departmentId=…
-   *   { name }                  → ?name=…
-   *   { date }                  → ?date=…          (LocalDate: "YYYY-MM-DD")
-   *   { fromDate, toDate }      → ?fromDate=…&toDate=…  (LocalDateTime: "YYYY-MM-DDTHH:mm:ss")
-   *   {}                        → all timelines
-   *
-   * Always adds page + size.
-   */
   getTimeline: (params = {}) => {
     const { page = 0, size = 10, ...filters } = params;
-    // Strip undefined/null/empty values
     const cleanFilters = Object.fromEntries(
       Object.entries(filters).filter(([, v]) => v !== undefined && v !== null && v !== '')
     );
@@ -60,10 +64,6 @@ export const attendanceAPI = {
     });
   },
 
-  /**
-   * GET /attendance/getTimelineByEmployee
-   * params: { employeeName, departmentName, fromDate?, toDate? }
-   */
   getTimelineByEmployee: (params = {}) => {
     const cleanParams = Object.fromEntries(
       Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
@@ -71,41 +71,32 @@ export const attendanceAPI = {
     return api.get('/attendance/getTimelineByEmployee', { params: cleanParams });
   },
 
-  // -----------------------------------------------------------------
-
   exportTimeline: (params = {}) => {
     const { page, size, ...filters } = params;
     const cleanParams = Object.fromEntries(
-        Object.entries(filters).filter(([, v]) => v !== undefined && v !== null && v !== '')
+      Object.entries(filters).filter(([, v]) => v !== undefined && v !== null && v !== '')
     );
     return api.get('/excel/timeline/export', {
-        params: cleanParams,
-        responseType: 'blob',           // ← muhim!
+      params: cleanParams,
+      responseType: 'blob',
     });
   },
 
   exportEmployeeTimeline: (params = {}) => {
-      const cleanParams = Object.fromEntries(
-          Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
-      );
-      return api.get('/excel/getTimelineByEmployee/export', {
-          params: cleanParams,
-          responseType: 'blob',           // ← muhim!
-      });
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
+    );
+    return api.get('/excel/getTimelineByEmployee/export', {
+      params: cleanParams,
+      responseType: 'blob',
+    });
   },
 
-  // -----------------------------------------------------------------
-
-  // Legacy compat
   getByDateRange: (fromDate, toDate) =>
-    api.get('/attendance/timeline', {
-      params: { fromDate, toDate },
-    }),
+    api.get('/attendance/timeline', { params: { fromDate, toDate } }),
 
   getAll: (page = 0, size = 10) =>
     api.get('/attendance/timeline', { params: { page, size } }),
-
-  
 };
 
 export default api;

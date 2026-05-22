@@ -2,6 +2,8 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { attendanceAPI, departmentAPI } from '../api/api';
 import { useNavigate } from 'react-router-dom';
 import { ClipboardList, Filter, Search, X, Calendar, ArrowRight, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import DepartmentSearchSelect from '../components/DepartmentSearchSelect';
+import '../components/DepartmentSearchSelect.css';
 import './PageCommon.css';
 import './Attendance.css';
 
@@ -68,7 +70,7 @@ const Attendance = () => {
   const handleNameInput = (val) => {
     setNameInput(val);
     clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => setNameFilter(val), 450);
+    debounceRef.current = setTimeout(() => setNameFilter(val), 200);
   };
 
   const applyDateRange = () => {
@@ -165,16 +167,10 @@ const Attendance = () => {
           <div className="filter-item">
             <Filter size={14} />
             <span>Bo'lim:</span>
-            <select
+            <DepartmentSearchSelect
               value={deptId}
-              onChange={e => setDeptId(e.target.value)}
-              className="filter-select"
-            >
-              <option value="">Barcha bo'limlar</option>
-              {departments.map(d => (
-                <option key={d.id} value={d.id}>{d.name}</option>
-              ))}
-            </select>
+              onChange={setDeptId}
+            />
           </div>
         )}
 

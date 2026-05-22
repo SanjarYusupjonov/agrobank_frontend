@@ -39,6 +39,7 @@ export const AuthProvider = ({ children }) => {
       const userInfo = {
         username: payload.sub,
         userType: meRes.data.userType, // 'ADMIN' yoki 'DEPARTMENT_HEAD'
+        fullName: meRes.data.fullName,
       };
 
       localStorage.setItem('user', JSON.stringify(userInfo));

@@ -278,3 +278,8 @@
   height: 100%;
   object-fit: contain;
 }
+/* Hide browser native password reveal button (Edge / Chrome) */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}

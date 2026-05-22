@@ -257,7 +257,7 @@ const DateBlock = ({ dateResponse }) => {
   const [tooltip, setTooltip] = useState(null);
 
   const segments = intervalsResponses
-    .filter(iv => iv.type !== 'lunch')
+    .filter(iv => iv != null)
     .map(iv => {
       const startMin = toMin(iv.start);
       const endMin   = toMin(iv.end);

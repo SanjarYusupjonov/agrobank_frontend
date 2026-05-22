@@ -76,7 +76,7 @@ const Dashboard = () => {
         <div>
           <h1 className="page-title">Dashboard</h1>
           <p className="page-desc">
-            Xush kelibsiz, <strong>{user?.username}</strong>! Bugungi davomat holati.
+            Xush kelibsiz, <strong>{user?.fullName || user?.username}</strong>! Bugungi davomat holati.
           </p>
         </div>
         <button className="refresh-btn" onClick={fetchData} disabled={loading}>

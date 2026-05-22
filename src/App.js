@@ -10,13 +10,14 @@ import Attendance from './pages/Attendance';
 import SearchPage from './pages/SearchPage';
 import ByDate from './pages/ByDate';
 import EmployeeTimeline from './pages/EmployeeTimeline';
+import DepartmentHeads from './pages/DepartmentHeads';
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<Login />} />
+          <Route path="/login"    element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route
             path="/dashboard"
@@ -55,6 +56,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Layout><EmployeeTimeline /></Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/department-heads"
+            element={
+              <ProtectedRoute>
+                <Layout><DepartmentHeads /></Layout>
               </ProtectedRoute>
             }
           />

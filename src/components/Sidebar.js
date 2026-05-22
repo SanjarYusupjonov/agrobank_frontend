@@ -2,22 +2,24 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-  LayoutDashboard, ClipboardList, Search,
-  Calendar, LogOut, ChevronRight
+  LayoutDashboard, ClipboardList, Users,
+  LogOut, ChevronRight
 } from 'lucide-react';
 import logo from '../assets/logo226.jpg';
 import './Sidebar.css';
 
 const NAV = [
-  { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
-  { to: '/attendance', icon: <ClipboardList size={18} />, label: 'Barcha Davomat' },
-  // { to: '/search', icon: <Search size={18} />, label: 'Qidiruv' },
-  // { to: '/by-date', icon: <Calendar size={18} />, label: "Sana bo'yicha" },
+  { to: '/dashboard',        icon: <LayoutDashboard size={18} />, label: 'Dashboard',            adminOnly: false },
+  { to: '/attendance',       icon: <ClipboardList   size={18} />, label: 'Barcha Davomat',       adminOnly: false },
+  { to: '/department-heads', icon: <Users           size={18} />, label: "Bo'lim boshliqlari",   adminOnly: true  },
 ];
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAdmin = currentUser.userType === 'ADMIN';
 
   const handleLogout = () => {
     logout();
@@ -38,7 +40,7 @@ const Sidebar = () => {
 
       <nav className="sidebar-nav">
         <div className="nav-section-label">Asosiy</div>
-        {NAV.map((item) => (
+        {NAV.filter(item => !item.adminOnly || isAdmin).map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -56,11 +58,13 @@ const Sidebar = () => {
       <div className="sidebar-footer">
         <div className="user-card">
           <div className="user-avatar">
-            {user?.username?.charAt(0)?.toUpperCase() || 'U'}
+            {user?.fullName?.charAt(0)?.toUpperCase() || 'U'}
           </div>
           <div className="user-info">
-            <div className="user-name">{user?.username || 'Foydalanuvchi'}</div>
-            <div className="user-role">Tizim foydalanuvchisi</div>
+            <div className="user-name">{user?.fullName || 'Foydalanuvchi'}</div>
+            <div className="user-role">
+              {isAdmin ? 'Administrator' : "Bo'lim boshlig'i"}
+            </div>
           </div>
         </div>
         <button className="logout-btn" onClick={handleLogout}>

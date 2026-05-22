@@ -1,0 +1,221 @@
+/* ── DepartmentSearchSelect ── */
+
+.dss-wrap {
+  position: relative;
+  min-width: 160px;
+}
+
+.dss-wrap--disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ── Trigger ── */
+.dss-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  height: 30px;
+  padding: 0 8px 0 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  transition: border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.dss-trigger:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dss-wrap--open .dss-trigger {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(74, 222, 128, 0.5);
+}
+
+.dss-trigger-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+.dss-trigger-label--placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.dss-trigger-icons {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  color: rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
+}
+
+.dss-clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.dss-clear-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.dss-chevron {
+  transition: transform 0.2s;
+}
+
+.dss-chevron--up {
+  transform: rotate(180deg);
+}
+
+/* ── Dropdown ── */
+.dss-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 1000;
+  min-width: 240px;
+  width: max-content;
+  max-width: 340px;
+  background: #1e2433;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: dss-pop 0.15s ease;
+}
+
+@keyframes dss-pop {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* ── Search row ── */
+.dss-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dss-search-icon {
+  color: rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
+
+.dss-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: inherit;
+}
+
+.dss-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Spinner ── */
+.dss-spinner {
+  color: rgba(255, 255, 255, 0.25);
+  animation: dss-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes dss-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Divider ── */
+.dss-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ── List ── */
+.dss-list {
+  max-height: 220px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.dss-list::-webkit-scrollbar { width: 3px; }
+.dss-list::-webkit-scrollbar-track { background: transparent; }
+.dss-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+/* ── Options ── */
+.dss-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.dss-option:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.dss-option--selected {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.07);
+}
+
+.dss-option--selected:hover {
+  background: rgba(74, 222, 128, 0.11);
+}
+
+.dss-option-all {
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.dss-option--selected .dss-option-all {
+  color: #4ade80;
+}
+
+.dss-option-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dss-option-check {
+  font-size: 11px;
+  color: #4ade80;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.dss-empty {
+  padding: 14px 12px;
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.2);
+}
