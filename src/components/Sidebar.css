@@ -25,22 +25,21 @@
 .sidebar-logo-img-wrap {
   width: 44px;
   height: 44px;
-  border-radius: 10px;
+  border-radius: 0;
   overflow: hidden;
   flex-shrink: 0;
-  background: #fff;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 16px rgba(30,184,100,0.25);
-  border: 1px solid rgba(30,184,100,0.2);
 }
 
 .sidebar-logo-img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  padding: 4px;
+  object-fit: cover;
+  display: block;
 }
 
 .sidebar-brand {

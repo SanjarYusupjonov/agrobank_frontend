@@ -1,14 +1,123 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { departmentAPI, departmentHeadsAPI } from '../api/api';
-import { Users, Search, X, ChevronLeft, ChevronRight, Building2, Plus, Eye, EyeOff, Trash2 } from 'lucide-react';
+import { Users, Search, X, ChevronLeft, ChevronRight, Building2, Plus, Eye, EyeOff, Trash2, ChevronDown } from 'lucide-react';
 import DepartmentSearchSelect from '../components/DepartmentSearchSelect';
 import '../components/DepartmentSearchSelect.css';
 import './PageCommon.css';
 import './DepartmentHeads.css';
 
 const PAGE_SIZE = 10;
-const EMPTY_FORM = { fullName: '', username: '', password: '', confirmPassword: '', departmentId: '' };
+const EMPTY_FORM = { fullName: '', username: '', password: '', confirmPassword: '', departmentIdList: [] };
 
+/* ── Multi-select bo'lim tanlash komponenti ────────────────────────── */
+const DeptMultiSelect = ({ departments, value = [], onChange, disabled }) => {
+  const [open, setOpen]   = useState(false);
+  const [query, setQuery] = useState('');
+  const wrapRef  = useRef(null);
+  const inputRef = useRef(null);
+
+  const filtered = query.trim()
+    ? departments.filter(d => d.name?.toLowerCase().includes(query.toLowerCase()))
+    : departments;
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  useEffect(() => {
+    if (open) { setQuery(''); setTimeout(() => inputRef.current?.focus(), 50); }
+  }, [open]);
+
+  const toggle = (dept) => {
+    const id = String(dept.id);
+    const exists = value.some(v => String(v) === id);
+    if (exists) onChange(value.filter(v => String(v) !== id));
+    else        onChange([...value, id]);
+  };
+
+  const remove = (e, id) => {
+    e.stopPropagation();
+    onChange(value.filter(v => String(v) !== String(id)));
+  };
+
+  const selectedDepts = departments.filter(d => value.some(v => String(v) === String(d.id)));
+
+  return (
+    <div
+      ref={wrapRef}
+      className={`dms-wrap${open ? ' dms-wrap--open' : ''}${disabled ? ' dms-wrap--disabled' : ''}`}
+    >
+      {/* Trigger */}
+      <div
+        className="dms-trigger"
+        onClick={() => !disabled && setOpen(o => !o)}
+        role="button"
+        tabIndex={0}
+      >
+        <div className="dms-chips">
+          {selectedDepts.length === 0 && (
+            <span className="dms-placeholder">Bo'lim tanlang (ixtiyoriy)…</span>
+          )}
+          {selectedDepts.map(dept => (
+            <span key={dept.id} className="dms-chip">
+              {dept.name}
+              <button
+                type="button"
+                className="dms-chip-remove"
+                onClick={(e) => remove(e, dept.id)}
+                disabled={disabled}
+              >
+                <X size={10} />
+              </button>
+            </span>
+          ))}
+        </div>
+        <ChevronDown size={14} className={`dms-chevron${open ? ' dms-chevron--up' : ''}`} />
+      </div>
+
+      {/* Dropdown */}
+      {open && (
+        <div className="dms-dropdown">
+          <div className="dms-search-wrap">
+            <Search size={13} className="dms-search-icon" />
+            <input
+              ref={inputRef}
+              type="text"
+              className="dms-search-input"
+              placeholder="Qidirish..."
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+            />
+          </div>
+          <div className="dms-list">
+            {filtered.length === 0 && <div className="dms-empty">Topilmadi</div>}
+            {filtered.map(dept => {
+              const selected = value.some(v => String(v) === String(dept.id));
+              return (
+                <div
+                  key={dept.id}
+                  className={`dms-option${selected ? ' dms-option--selected' : ''}`}
+                  onClick={() => toggle(dept)}
+                  role="option"
+                  aria-selected={selected}
+                >
+                  <span className="dms-option-check">{selected ? '✓' : ''}</span>
+                  <span className="dms-option-name">{dept.name}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ── Asosiy sahifa ────────────────────────────────────────────────── */
 const DepartmentHeads = () => {
   const [rows, setRows]             = useState([]);
   const [pagination, setPagination] = useState({ page: 0, totalPages: 0, totalElements: 0 });
@@ -30,7 +139,7 @@ const DepartmentHeads = () => {
   const [submitError, setSubmitError] = useState('');
 
   // ── delete confirm state ──────────────────────────────────────────
-  const [deleteTarget, setDeleteTarget] = useState(null); // { id, fullName }
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting]         = useState(false);
   const [deleteError, setDeleteError]   = useState('');
 
@@ -116,10 +225,10 @@ const DepartmentHeads = () => {
     setSubmitError('');
     try {
       await departmentHeadsAPI.create({
-        fullName:     form.fullName.trim(),
-        username:     form.username.trim(),
-        password:     form.password,
-        departmentId: form.departmentId ? Number(form.departmentId) : null,
+        fullName:         form.fullName.trim(),
+        username:         form.username.trim(),
+        password:         form.password,
+        departmentIdList: form.departmentIdList.map(Number),
       });
       setModalOpen(false);
       fetchPage(0);
@@ -154,6 +263,13 @@ const DepartmentHeads = () => {
 
   const COLORS = ['#1eb864','#0a9e55','#14c46a','#0d7a42','#22d874'];
   const colorFor = (id) => COLORS[(id || 0) % COLORS.length];
+
+  // Backend departments array yoki eski department object ni qo'llab-quvvatlash
+  const getDepts = (head) => {
+    if (Array.isArray(head.departments) && head.departments.length > 0) return head.departments;
+    if (head.department?.name) return [head.department];
+    return [];
+  };
 
   return (
     <div className="page">
@@ -217,7 +333,7 @@ const DepartmentHeads = () => {
                 <th>#</th>
                 <th>Xodim</th>
                 <th>Login</th>
-                <th><Building2 size={13} style={{ marginRight: 5, verticalAlign: 'middle' }} />Bo'lim</th>
+                <th><Building2 size={13} style={{ marginRight: 5, verticalAlign: 'middle' }} />Bo'limlar</th>
                 <th>Tur</th>
                 <th></th>
               </tr>
@@ -236,9 +352,14 @@ const DepartmentHeads = () => {
                   </td>
                   <td><span className="dh-username">@{head.userName}</span></td>
                   <td>
-                    {head.department?.name
-                      ? <span className="dh-dept-badge">{head.department.name}</span>
-                      : <span className="dh-none">—</span>}
+                    <div className="dh-dept-list">
+                      {getDepts(head).length > 0
+                        ? getDepts(head).map(d => (
+                            <span key={d.id} className="dh-dept-badge">{d.name}</span>
+                          ))
+                        : <span className="dh-none">—</span>
+                      }
+                    </div>
                   </td>
                   <td>
                     <span className="dh-type-badge">
@@ -381,16 +502,20 @@ const DepartmentHeads = () => {
                 }
               </div>
 
-              {/* Department — live search */}
+              {/* Departments — multi-select */}
               <div className="dh-field">
-                <label className="dh-label">Bo'lim <span className="dh-label-opt">(ixtiyoriy)</span></label>
-                <div className={`dh-dept-modal-wrap ${submitting ? 'dh-dept-disabled' : ''}`}>
-                  <DepartmentSearchSelect
-                    departments={departments}
-                    value={form.departmentId}
-                    onChange={val => setField('departmentId', val)}
-                  />
-                </div>
+                <label className="dh-label">
+                  Bo'limlar{' '}
+                  <span className="dh-label-opt">
+                    (ixtiyoriy{form.departmentIdList.length > 0 ? ` · ${form.departmentIdList.length} ta tanlangan` : ''})
+                  </span>
+                </label>
+                <DeptMultiSelect
+                  departments={departments}
+                  value={form.departmentIdList}
+                  onChange={val => setField('departmentIdList', val)}
+                  disabled={submitting}
+                />
               </div>
 
               {/* Type (read-only) */}
@@ -418,6 +543,7 @@ const DepartmentHeads = () => {
           </div>
         </div>
       )}
+
       {/* ── Delete Confirm Modal ─────────────────────────────────── */}
       {deleteTarget && (
         <div className="dh-modal-overlay" onClick={() => { if (!deleting) setDeleteTarget(null); }}>

@@ -90,7 +90,7 @@
 .logo-icon {
   width: 52px; height: 52px;
   background: linear-gradient(135deg, #1eb864, #0a7a3e);
-  border-radius: 14px;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -267,16 +267,17 @@
 
 /* ── Real logo image override ── */
 .logo-icon--img {
-  background: #ffffff;
+  background: transparent;
   box-shadow: 0 8px 24px rgba(30,184,100,0.2);
-  padding: 4px;
+  padding: 0;
   overflow: hidden;
 }
 
 .login-logo-img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  display: block;
 }
 /* Hide browser native password reveal button (Edge / Chrome) */
 input::-ms-reveal,
