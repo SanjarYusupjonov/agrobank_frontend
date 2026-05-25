@@ -13,6 +13,8 @@ const EmployeeTimeline = () => {
   const navigate  = useNavigate();
   const location  = useLocation();
 
+  const [exportingPdf, setExportingPdf] = useState(false);
+
   const name = decodeURIComponent(employeeName || '');
   const dept = decodeURIComponent(departmentName || '');
 
@@ -102,6 +104,31 @@ const handleExport = async () => {
   }
 };
 
+const handleExportPdf = async () => {
+  setExportingPdf(true);
+  try {
+    const params = { employeeName: name, departmentName: dept };
+    if (activeFrom && activeTo) {
+      params.fromDate       = `${activeFrom}T00:00:00`;
+      params.toDate         = `${activeTo}T23:59:59`;
+      params.dateRangeLabel = `${activeFrom} → ${activeTo}`;
+    }
+    const res  = await attendanceAPI.exportEmployeeTimelinePdf(params);
+    const url  = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+    const link = document.createElement('a');
+    link.href  = url;
+    link.setAttribute('download', `${name}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch {
+    alert('PDF export xatosi yuz berdi.');
+  } finally {
+    setExportingPdf(false);
+  }
+};
+
   const isDateRangeActive = !!(activeFrom && activeTo);
   const stats = calcStats(data);
 
@@ -145,6 +172,15 @@ const handleExport = async () => {
             >
               <Download size={14} />
               {exporting ? 'Yuklanmoqda...' : 'Excel'}
+            </button>
+
+            <button
+              className="export-btn export-btn--pdf"
+              onClick={handleExportPdf}
+              disabled={loading || exportingPdf}
+            >
+              <Download size={14} />
+              {exportingPdf ? 'Yuklanmoqda...' : 'PDF'}
             </button>
           </div>
         )}
@@ -362,11 +398,13 @@ function calcStats(data) {
   if (!data) return { totalWork: 0, totalBreak: 0, totalDays: 0 };
   let totalWork = 0, totalBreak = 0;
   (data.dateResponses || []).forEach(dr => {
-    (dr.intervalsResponses || []).forEach(iv => {
-      const min = toMin(iv.end) - toMin(iv.start);
-      if (iv.type === 'work')       totalWork  += min;
-      else if (iv.type === 'break') totalBreak += min;
-    });
+    (dr.intervalsResponses || [])
+      .filter(iv => iv != null)        
+      .forEach(iv => {
+        const min = toMin(iv.end) - toMin(iv.start);
+        if (iv.type === 'work')       totalWork  += min;
+        else if (iv.type === 'break') totalBreak += min;
+      });
   });
   return { totalWork, totalBreak, totalDays: (data.dateResponses || []).length };
 }

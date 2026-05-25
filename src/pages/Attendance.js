@@ -18,6 +18,7 @@ const Attendance = () => {
   const [loading, setLoading]       = useState(false);
   const [exporting, setExporting]   = useState(false);
   const [error, setError]           = useState('');
+  const [exportingPdf, setExportingPdf] = useState(false);
 
   const [departments, setDepartments] = useState([]);
 
@@ -131,6 +132,35 @@ const Attendance = () => {
     }
   };
 
+  const handleExportPdf = async () => {
+    setExportingPdf(true);
+    try {
+      const params = {};
+      if (deptId)                 params.departmentId = Number(deptId);
+      if (nameFilter)             params.name         = nameFilter;
+      if (dateFilter)             params.date         = dateFilter;
+      if (activeFrom && activeTo) {
+        params.fromDate        = `${activeFrom}T00:00:00`;
+        params.toDate          = `${activeTo}T23:59:59`;
+        params.dateRangeLabel  = `${activeFrom} → ${activeTo}`;
+      }
+      if (deptName) params.departmentName = deptName;
+      const res  = await attendanceAPI.exportTimelinePdf(params);
+      const url  = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href  = url;
+      link.setAttribute('download', 'davomat.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      alert('PDF export xatosi yuz berdi.');
+    } finally {
+      setExportingPdf(false);
+    }
+  };
+
   const isDateRangeActive = !!(activeFrom && activeTo);
   const deptName = departments.find(d => String(d.id) === String(deptId))?.name || '';
   const grouped  = buildGrouped(rows);
@@ -157,6 +187,15 @@ const Attendance = () => {
           >
             <Download size={14} />
             {exporting ? 'Yuklanmoqda...' : 'Excel'}
+          </button>
+
+          <button
+            className="export-btn export-btn--pdf"
+            onClick={handleExportPdf}
+            disabled={loading || exportingPdf}
+          >
+            <Download size={14} />
+            {exportingPdf ? 'Yuklanmoqda...' : 'PDF'}
           </button>
         </div>
       </div>

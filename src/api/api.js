@@ -92,6 +92,27 @@ export const attendanceAPI = {
     });
   },
 
+  exportTimelinePdf: (params = {}) => {
+    const { page, size, ...filters } = params;
+    const cleanParams = Object.fromEntries(
+      Object.entries(filters).filter(([, v]) => v !== undefined && v !== null && v !== '')
+    );
+    return api.get('/pdf/timeline/export', {
+      params: cleanParams,
+      responseType: 'blob',
+    });
+  },
+
+  exportEmployeeTimelinePdf: (params = {}) => {
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
+    );
+    return api.get('/pdf/getTimelineByEmployee/export', {
+      params: cleanParams,
+      responseType: 'blob',
+    });
+  },
+
   getByDateRange: (fromDate, toDate) =>
     api.get('/attendance/timeline', { params: { fromDate, toDate } }),
 
